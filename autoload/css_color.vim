@@ -38,6 +38,12 @@ function! s:hsl2color(h,s,l)
 	return printf( '%02x%02x%02x', rgb[0], rgb[1], rgb[2] )
 endfunction
 
+function! s:hsluv2color(h,s,l)
+	let [h,s,l] = map( [a:h,a:s, a:l], 'str2float(v:val)' )
+	let rgb = hsluv#to_rgb([h,s,l])
+	return printf( '%02x%02x%02x', rgb[0], rgb[1], rgb[2] )
+endfunction
+
 let s:hex={}
 for i in range(0, 255)
 	let s:hex[ printf( '%02x', i ) ] = i
@@ -141,10 +147,12 @@ function! s:create_syn_match()
 		let hexcolor = submatch(1)
 		let funcname = submatch(2)
 
-		if funcname == 'rgb'
+		if funcname == 'rgb' || funcname == 'rgba'
 			let rgb_color = s:rgb2color(submatch(3),submatch(4),submatch(5))
-		elseif funcname == 'hsl'
+		elseif funcname == 'hsl' || funcname == 'hsla'
 			let rgb_color = s:hsl2color(submatch(3),submatch(4),submatch(5))
+		elseif funcname == 'hsluv'
+			let rgb_color = s:hsluv2color(submatch(3),submatch(4),submatch(5))
 		elseif strlen(hexcolor) == 6
 			let rgb_color = tolower(hexcolor)
 		elseif strlen(hexcolor) == 3
@@ -203,9 +211,9 @@ function! s:create_matches()
 endfunction
 
 let s:_hexcolor   = '#\(\x\{3}\|\x\{6}\)\>' " submatch 1
-let s:_funcname   = '\(rgb\|hsl\)a\?' " submatch 2
+let s:_funcname   = '\(rgba\?\|hsla\?\|hsluv\)' " submatch 2
 let s:_ws_        = '\s*'
-let s:_numval     = s:_ws_ . '\(\d\{1,3}%\?\)' " submatch 3,4,5
+let s:_numval     = s:_ws_ . '\(\d\{1,3}\%(.\d\+\)\?%\?\)' " submatch 3,4,5
 let s:_listsep    = s:_ws_ . ','
 let s:_otherargs_ = '\%(,[^)]*\)\?'
 let s:_funcexpr   = s:_funcname . '[(]' . s:_numval . s:_listsep . s:_numval . s:_listsep . s:_numval . s:_ws_ . s:_otherargs_ . '[)]'
