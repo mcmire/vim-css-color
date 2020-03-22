@@ -39,7 +39,8 @@ function! s:hsl2color(h,s,l)
 endfunction
 
 function! s:hsluv2color(h,s,l)
-	let [h,s,l] = map( [a:h,a:s, a:l], 'str2float(v:val)' )
+  let h = str2float(a:h)
+	let [s,l] = map( [a:s, a:l], 'v:val =~ "%$" ? str2float(v:val) : str2float(v:val) * 100.0' )
 	let rgb = hsluv#to_rgb([h,s,l])
 	return printf( '%02x%02x%02x', rgb[0], rgb[1], rgb[2] )
 endfunction
